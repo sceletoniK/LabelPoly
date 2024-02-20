@@ -157,7 +157,7 @@ class Ui_LabelPoly(object):
 
     def changeLabel(self, index):
         item: QStandardItem = self.object_list_model.itemFromIndex(index)
-        self.label_inspector.current_label = item.data()
+        self.label_inspector.set_current(item.data())
 
     def updateLabelList(self):
         self.object_list_model.clear()

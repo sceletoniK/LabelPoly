@@ -67,7 +67,16 @@ class QLabelGraphicScene(QGraphicsScene):
             self.image.rect().height()
         )
         self.setBackgroundBrush(QBrush(QColor.fromRgb(180, 180, 180)))
-        self.label_inspector.current_changed = self.set_current
+        self.label_inspector.current_changed = self.update_current
+
+    def keyReleaseEvent(self, event):
+        modifiers = QApplication.keyboardModifiers()
+        if (modifiers != Qt.ControlModifier or
+                not self._current_label or
+                event.key() != Qt.Key_D):
+            super().keyReleaseEvent(event)
+            return
+        self.label_inspector.remove_current()
 
     def mouseMoveEvent(self, event):
         if self._current_label:
@@ -109,12 +118,15 @@ class QLabelGraphicScene(QGraphicsScene):
             self._current_label = None
         self.update()
 
-    def set_current(self):
-        if not self.label_inspector.current_label:
+    def update_current(self):
+        if self.label_inspector.current_label:
+            self._current_label = QLabelGraphicItem(self.label_inspector.current_label)
+            if self._current_label not in self.items():
+                self.addItem(self._current_label)
             return
-        self._current_label = QLabelGraphicItem(self.label_inspector.current_label)
-        if self._current_label not in self.items():
-            self.addItem(self._current_label)
+        if (self._current_label.label not in self.label_inspector.labels and
+                self._current_label in self.items()):
+            self.removeItem(self._current_label)
 
     def changeImage(self, path: str):
         self.clear()

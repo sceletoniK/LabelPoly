@@ -70,10 +70,14 @@ class LabelInspector:
     def __init__(self, class_names: List[str]):
         self.labels: List[LabelItem] = []
         self.label_classes: List[str] = class_names
-        self.current_label: LabelItem = None
+        self._current_label: LabelItem = None
         self._current_class: int = None
         self.labels_changed: Callable = None
         self.current_changed: Callable = None
+
+    @property
+    def current_label(self):
+        return self._current_label
 
     @property
     def current_class(self):
@@ -102,14 +106,14 @@ class LabelInspector:
             return True
         return False
 
-    def add_current(self, x: int, y: int):
-        self.current_label = LabelItem(self._current_class, x, y)
+    def set_current(self, item: LabelItem):
+        self._current_label = item
         if self.current_changed:
             self.current_changed()
 
     def remove_current(self):
         if self.current_label:  # and self.current_label.is_finished == False:
-            self.current_label = None
+            self._current_label = None
         if self.current_changed:
             self.current_changed()
 
@@ -127,11 +131,11 @@ class LabelInspector:
         if self.current_label:
             if self.current_label.add_point(x, y, limit):
                 self.add_label()
-                self.current_label = None
+                self.remove_current()
         else:
             if self._current_class is None:
                 raise Exception("Label class dont set")
-            self.add_current(x, y)
+            self.set_current(LabelItem(self._current_class, x, y))
 
     def clear(self):
         self.labels.clear()
