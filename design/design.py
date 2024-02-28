@@ -26,12 +26,18 @@ class Ui_LabelPoly(object):
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+
+        #Main window
         self.label_inspector = LabelInspector([])
         self.graphicsView = QLabelGraphicView(self.centralwidget, self.label_inspector)
         self.graphicsView.setObjectName("graphicsView")
         self.horizontalLayout_2.addWidget(self.graphicsView)
+
+        #Lists
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
+
+        #Label list
         self.label_label = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Tahoma")
@@ -71,9 +77,13 @@ class Ui_LabelPoly(object):
         self.add_label_button.setText("Add")
         self.add_label_button.clicked.connect(self.addLabelClass)
         self.horizontalLayout.addWidget(self.add_label_button)
+
+
         self.verticalLayout.addLayout(self.horizontalLayout)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
+
+        #Object list
         self.object_label = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Tahoma")
@@ -107,9 +117,12 @@ class Ui_LabelPoly(object):
         self.verticalLayout.addWidget(self.object_list)
         self.horizontalLayout_2.addLayout(self.verticalLayout)
         self.graphicsView.setMouseTracking(True)
+
         LabelPoly.setCentralWidget(self.centralwidget)
         self.retranslateUi(LabelPoly)
         QtCore.QMetaObject.connectSlotsByName(LabelPoly)
+
+        # Toolbar
         self.toolBar = QtWidgets.QToolBar(LabelPoly)
         self.toolBar.setObjectName("toolBar")
         self.toolBar.setIconSize(QSize(40, 40))
