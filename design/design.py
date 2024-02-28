@@ -13,8 +13,8 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QAction, QFileDialog
 
-from design.Inspector.Inspector import LabelInspector
-from design.View.View import QLabelGraphicScene, QLabelGraphicView
+from .Inspector import LabelInspector
+from .QWidget import QLabelGraphicScene, QLabelGraphicView
 
 
 class Ui_LabelPoly(object):
@@ -129,7 +129,7 @@ class Ui_LabelPoly(object):
                                                "Open Image",
                                                ".",
                                                "Images (*.png *.jpg)")
-        scene = self.graphicsView.scene()
+        scene = self.graphicsView.scene
         if isinstance(scene, QLabelGraphicScene):
             scene.changeImage(filename[0])
         self.label_inspector.clear()
