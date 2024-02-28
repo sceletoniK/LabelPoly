@@ -9,12 +9,12 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt, QRect, QRectF, QModelIndex, QItemSelectionModel
-from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
-from PyQt5.QtWidgets import QGraphicsView, QAction, QFileDialog
+from PyQt5.QtCore import QModelIndex
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QAction, QFileDialog
 
-from LabelInspector import LabelInspector
-from QLabelGraphicView import QLabelGraphicScene, QLabelGraphicView
+from design.Inspector.Inspector import LabelInspector
+from design.View.View import QLabelGraphicScene, QLabelGraphicView
 
 
 class Ui_LabelPoly(object):
