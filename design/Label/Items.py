@@ -20,6 +20,12 @@ class LabelPoint:
     def diff(self, another) -> Tuple[int, int]:
         return self.x - another.x, self.y - another.y
 
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
+    def __repr__(self):
+        return f"({self.x}, {self.y})"
+
 
 class LabelBoundException(Exception):
     pass
@@ -73,20 +79,31 @@ class LabelItem:
             return self.is_finished
 
         if len(self.points) > 1 and self.points[0].range(new_point) <= limit:
-            self.points.append(new_point)
-            self.points = self._optimize()[:-1]
+            #self.points.append(new_point)
+            #self.points = self._optimize()
+            #if new_point in self.points:
+            #   self.points = self.points[:-1]
 
             diff0 = self.points[-1].diff(self.points[0])
+            diff1 = self.points[-2].diff(self.points[0])
 
             if abs(diff0[0]) <= abs(diff0[1]):
                 self.points[-1].x = self.points[0].x
+                # if diff0[1] == diff1[1]:
+                #    self.points[-2].x = self.points[0].x
             else:
                 self.points[-1].y = self.points[0].y
+                # if diff0[0] == diff1[0]:
+                #    self.points[-2].y = self.points[0].y
+
             self.points = self._optimize()
             self.is_finished = True
+            print(self.points)
             return self.is_finished
 
         self.points.append(new_point)
+        self.points = self._optimize()
+        print(self.points)
         return self.is_finished
 
     def get_bound(self) -> Tuple[int, int, int, int]:
