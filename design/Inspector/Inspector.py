@@ -1,4 +1,4 @@
-from typing import List, Tuple, Callable
+from typing import List, Callable, Optional
 from ..Label import LabelItem
 
 
@@ -9,8 +9,8 @@ class LabelInspector:
         self.label_classes: List[str] = class_names
         self._current_label: LabelItem = None
         self._current_class: int = None
-        self.labels_changed: Callable = None
-        self.current_changed: Callable = None
+        self.labels_changed: List[Callable] = []
+        self.current_changed: List[Callable] = []
 
     @property
     def current_label(self):
@@ -43,38 +43,44 @@ class LabelInspector:
             return True
         return False
 
-    def set_current(self, item: LabelItem):
+    def set_current(self, item: Optional[LabelItem]):
         self._current_label = item
-        if self.current_changed:
-            self.current_changed()
+        for handler in self.current_changed:
+            handler()
 
     def remove_current(self):
         if self.current_label:  # and self.current_label.is_finished == False:
             self._current_label = None
-        if self.current_changed:
-            self.current_changed()
+        for handler in self.current_changed:
+            handler()
 
-    def add_label(self):
-        self.labels.append(self.current_label)
-        if self.labels_changed:
-            self.labels_changed()
+    def add_label(self, label: LabelItem):
+        if label:
+            self.labels.append(label)
+            for handler in self.labels_changed:
+                handler()
 
     def delete_label(self, label: LabelItem):
-        self.labels.remove(label)
-        if self.labels_changed:
-            self.labels_changed()
+        if label:
+            if label == self.current_label:
+                self.remove_current()
+            self.labels.remove(label)
+            for handler in self.labels_changed:
+                handler()
 
     def set_point(self, x: int, y: int, limit: int = 20):
         if self.current_label:
-            if self.current_label.add_point(x, y, limit):
-                self.add_label()
-                self.remove_current()
+            self.current_label.add_point(x, y, limit)
+            # self.add_label()
+            # self.set_current(self._current_label)
         else:
             if self._current_class is None:
                 raise Exception("Label class dont set")
-            self.set_current(LabelItem(self._current_class, x, y))
+            label = LabelItem(self._current_class, x, y)
+            self.add_label(label)
+            self.set_current(label)
 
     def clear(self):
         self.labels.clear()
-        if self.labels_changed:
-            self.labels_changed()
+        for handler in self.labels_changed:
+            handler()

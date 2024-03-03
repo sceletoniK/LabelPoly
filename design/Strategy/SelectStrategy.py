@@ -1,7 +1,7 @@
 from typing import Optional
 
 from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtGui import QKeyEvent, QTransform
+from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtWidgets import QGraphicsSceneMouseEvent
 
 from .Strategy import LabelStrategy

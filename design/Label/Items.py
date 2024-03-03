@@ -21,6 +21,10 @@ class LabelPoint:
         return self.x - another.x, self.y - another.y
 
 
+class LabelBoundException(Exception):
+    pass
+
+
 class LabelItem:
 
     def __init__(self, class_index: int, x: int, y: int):
@@ -32,6 +36,30 @@ class LabelItem:
         for point in self.points:
             point.x += delta_point.x()
             point.y += delta_point.y()
+
+    def _optimize(self) -> List[LabelPoint]:
+        new_points: List[LabelPoint] = [] #self.points[:-2]
+        if len(self.points) < 3:
+            return self.points
+        # if self.points[-1].x == self.points[-2].x == self.points[-3].x or \
+        #        self.points[-1].y == self.points[-2].y == self.points[-3].y:
+        #    new_points += self.points[-1:]
+        # else:
+        #    new_points += self.points[-2:]
+        # return new_points
+        for i, point in enumerate(self.points):
+            if self.points[i - 1].x == point.x == self.points[(i + 1) % len(self.points)].x:
+                print(i)
+                continue
+            if self.points[i - 1].y == point.y == self.points[(i + 1) % len(self.points)].y:
+                print(i)
+                continue
+            new_points.append(point)
+        if len(new_points) < 4 and self.is_finished:
+            raise LabelBoundException("No rect label")
+        if not new_points:
+            new_points = [self.points[0], self.points[-1]]
+        return new_points
 
     def add_point(self, x: int, y: int, limit: int = 100) -> bool:
         if self.is_finished:
@@ -45,17 +73,21 @@ class LabelItem:
             return self.is_finished
 
         if len(self.points) > 1 and self.points[0].range(new_point) <= limit:
+            self.points.append(new_point)
+            self.points = self._optimize()[:-1]
+
             diff0 = self.points[-1].diff(self.points[0])
-            diff1 = self.points[-1].diff(self.points[1])
 
             if abs(diff0[0]) <= abs(diff0[1]):
                 self.points[-1].x = self.points[0].x
             else:
                 self.points[-1].y = self.points[0].y
+            self.points = self._optimize()
             self.is_finished = True
             return self.is_finished
 
         self.points.append(new_point)
+        #self.points = self._optimize()
         return self.is_finished
 
     def get_bound(self) -> Tuple[int, int, int, int]:
@@ -87,6 +119,7 @@ class QLabelGraphicItem(QGraphicsItem):
         self.mouse_point: QPoint = QPoint(label.points[0].x,
                                           label.points[0].y)
         self.limit = 20
+        self.active: bool = False
 
     def paint(self, painter, option, widget=...):
         view: QGraphicsView = widget.parent()
@@ -113,7 +146,17 @@ class QLabelGraphicItem(QGraphicsItem):
                     )
                 )
         else:
+            if self.active:
+                painter.setBrush(QColor.fromRgb(60, 60, 60, 80))
+                painter.drawPolygon(points)
             painter.drawPolygon(points)
+            for point in points:
+                painter.drawEllipse(
+                    QRect(
+                        QPoint(point.x() - 3, point.y() - 3),
+                        QPoint(point.x() + 3, point.y() + 3)
+                    )
+                )
 
     def boundingRect(self):
         return QRectF(*self.label.get_bound())

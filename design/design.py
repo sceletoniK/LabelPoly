@@ -2,12 +2,12 @@ import functools
 from pathlib import Path
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QModelIndex, QSize
+from PyQt5.QtCore import QModelIndex, QSize, Qt, QItemSelectionModel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import QAction, QFileDialog
 
 from .Inspector import LabelInspector
-from .QWidget import QLabelGraphicScene, QLabelGraphicView
+from .QWidget import QLabelGraphicScene, QLabelGraphicView, QLabelList
 from .Strategy import LabelStrategy, InsertStrategy, SelectStrategy
 
 FILE = Path(__file__).resolve()
@@ -105,17 +105,7 @@ class Ui_LabelPoly(object):
         self.object_label.setObjectName("label")
         self.object_label.setText("Objects")
         self.verticalLayout.addWidget(self.object_label)
-        self.object_list = QtWidgets.QListView(self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.object_list.sizePolicy().hasHeightForWidth())
-        self.object_list.setSizePolicy(sizePolicy)
-        self.object_list_model = QStandardItemModel()
-        self.object_list.setModel(self.object_list_model)
-        self.object_list.clicked[QModelIndex].connect(self.changeLabel)
-        self.label_inspector.labels_changed = self.updateLabelList
-        self.object_list.setObjectName("objectList")
+        self.object_list = QLabelList(self.centralwidget, self.label_inspector)
         self.verticalLayout.addWidget(self.object_list)
         self.horizontalLayout_2.addLayout(self.verticalLayout)
         self.graphicsView.setMouseTracking(True)
@@ -174,7 +164,7 @@ class Ui_LabelPoly(object):
                                                "Images (*.png *.jpg)")
         scene = self.graphicsView.scene
         if isinstance(scene, QLabelGraphicScene):
-            scene.changeImage(filename[0])
+            scene.change_image(filename[0])
         self.label_inspector.clear()
 
     def addLabelClass(self, event):
@@ -197,17 +187,6 @@ class Ui_LabelPoly(object):
         self.label_list_model.clear()
         for i in self.label_inspector.label_classes:
             self.label_list_model.appendRow(QStandardItem(i))
-
-    def changeLabel(self, index):
-        item: QStandardItem = self.object_list_model.itemFromIndex(index)
-        self.label_inspector.set_current(item.data())
-
-    def updateLabelList(self):
-        self.object_list_model.clear()
-        for i in self.label_inspector.labels:
-            item = QStandardItem(self.label_inspector.label_classes[i.class_index])
-            item.setData(i)
-            self.object_list_model.appendRow(item)
 
     def retranslateUi(self, LabelPoly):
         _translate = QtCore.QCoreApplication.translate

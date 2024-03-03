@@ -14,9 +14,8 @@ class InsertStrategy(LabelStrategy):
         if (modifiers != Qt.ControlModifier or
                 not self.scene.current_label or
                 event.key() != Qt.Key_D):
-            #self.scene.keyReleaseEvent(event)
             return
-        self.scene.label_inspector.remove_current()
+        self.scene.label_inspector.delete_label(self.scene.label_inspector.current_label)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         if self.scene.current_label:
@@ -43,12 +42,19 @@ class InsertStrategy(LabelStrategy):
         if not self.scene.label_inspector.current_class:
             return
 
+        if event.button() == Qt.RightButton:
+            self.scene.label_inspector.delete_label(self.scene.label_inspector.current_label)
+            self.scene.update()
+            return
+
         if event.button() == Qt.LeftButton:
-            if self.scene.label_inspector.current_label:
+            if self.scene.label_inspector.current_label and \
+                    not self.scene.label_inspector.current_label.is_finished:
                 self.scene.label_inspector.set_point(self.scene.current_label.mouse_point.x(),
                                                      self.scene.current_label.mouse_point.y())
             else:
+                if self.scene.label_inspector.current_label and \
+                        self.scene.label_inspector.current_label.is_finished:
+                    self.scene.label_inspector.set_current(None)
                 self.scene.label_inspector.set_point(event.scenePos().x(), event.scenePos().y())
-        elif event.button() == Qt.RightButton:
-            self.scene.label_inspector.remove_current()
-        self.scene.update()
+            self.scene.update()

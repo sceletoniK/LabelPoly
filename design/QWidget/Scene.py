@@ -22,7 +22,8 @@ class QLabelGraphicScene(QGraphicsScene):
             self.image.rect().height()
         )
         self.setBackgroundBrush(QBrush(QColor.fromRgb(180, 180, 180)))
-        self.label_inspector.current_changed = self._update_current
+        self.label_inspector.current_changed.append(self._update_current)
+        self.label_inspector.labels_changed.append(self._update_labels)
 
     @property
     def current_label(self):
@@ -53,20 +54,22 @@ class QLabelGraphicScene(QGraphicsScene):
                 return graphic_label
         return None
 
-    def _update_current(self):
-        if self.label_inspector.current_label:
-            self._current_label = self._find_label(self.label_inspector.current_label)
-            if not self._current_label:
-                self._current_label = QLabelGraphicItem(self.label_inspector.current_label)
-                self.addItem(self._current_label)
-            return
-        if (self._current_label and
-                (self._current_label.label not in self.label_inspector.labels and
-                 self._find_label(self._current_label.label))):
-            self.removeItem(self._current_label)
-        self._current_label = None
+    def _update_labels(self):
+        for label in [x for x in self.items() if isinstance(x, (QLabelGraphicItem, LabelManipulator))]:
+            self.removeItem(label)
+        for label in self.label_inspector.labels:
+            self.addItem(QLabelGraphicItem(label))
+        self.update()
 
-    def changeImage(self, path: str):
+    def _update_current(self):
+        if self._current_label:
+            self._current_label.active = False
+        self._current_label = self._find_label(self.label_inspector.current_label)
+        if self._current_label:
+            self._current_label.active = True
+        self.update()
+
+    def change_image(self, path: str):
         self.clear()
         self.image = QPixmap(path)
         self.addPixmap(self.image)
@@ -76,4 +79,3 @@ class QLabelGraphicScene(QGraphicsScene):
             self.image.rect().width(),
             self.image.rect().height()
         )
-
