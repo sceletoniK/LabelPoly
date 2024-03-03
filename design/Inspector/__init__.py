@@ -1,1 +1,1 @@
-from .Inspector import LabelInspector
+from .LabelInspector import LabelInspector

@@ -11,6 +11,7 @@ class LabelInspector:
         self._current_class: int = None
         self.labels_changed: List[Callable] = []
         self.current_changed: List[Callable] = []
+        self.labels_classes_changed: List[Callable] = []
 
     @property
     def current_label(self):
@@ -29,17 +30,33 @@ class LabelInspector:
             self._current_class = self.label_classes.index(label_class)
             return True
         self.current_label.class_index = self.label_classes.index(label_class)
+        for handler in self.labels_changed:
+            handler()
 
     def add_label_class(self, label: str) -> bool:
         if label not in self.label_classes:
             self.label_classes.append(label)
+            for handler in self.labels_classes_changed:
+                handler()
             return True
         return False
+
+    def add_label_classes(self, labels: List[str], inplace: bool = False):
+        if labels:
+            if inplace:
+                self.label_classes = labels
+            else:
+                self.label_classes = list(set(self.label_classes + labels))
+            for handler in self.labels_classes_changed:
+                handler()
 
     def remove_label_class(self, label: str) -> bool:
         if label in self.label_classes:
             index = self.label_classes.index(label)
-            self.labels = [x for x in self.labels if x.class_index != index]
+            for label in [x for x in self.labels if x.class_index == index]:
+                self.delete_label(label)
+            for handler in self.labels_classes_changed:
+                handler()
             return True
         return False
 

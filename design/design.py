@@ -1,8 +1,10 @@
 import functools
+import os.path
 from pathlib import Path
+from typing import Optional, List
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QModelIndex, QSize, Qt, QItemSelectionModel
+from PyQt5.QtCore import QModelIndex, QSize
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import QAction, QFileDialog
 
@@ -33,6 +35,7 @@ class Ui_LabelPoly(object):
         self.label_inspector = LabelInspector([])
         self.graphicsScene = QLabelGraphicScene(self.label_inspector)
         self.graphicsView = QLabelGraphicView(self.centralwidget, self.graphicsScene)
+        self.label_inspector.labels_classes_changed.append(self.updateLabelClassList)
         self.graphicsView.setObjectName("graphicsView")
         self.horizontalLayout_2.addWidget(self.graphicsView)
 
@@ -128,6 +131,7 @@ class Ui_LabelPoly(object):
         open_folder_action = QAction("Open folder", self.toolBar)
         open_folder_action.setStatusTip("Open a folder of documents")
         open_folder_action.setIcon(QIcon(ROOT + "/icons/open_folder.png"))
+        open_folder_action.setDisabled(True)
         self.toolBar.addAction(open_folder_action)
         self.toolBar.addSeparator()
         insert_strategy_action = QAction("Create", self.toolBar)
@@ -157,15 +161,28 @@ class Ui_LabelPoly(object):
                 strategy.apply()
                 action.setChecked(True)
 
+    def openClassesFile(self, filepath: str) -> Optional[List[str]]:
+        if not filepath.endswith("classes.txt"):
+            filepath = '/'.join(filepath.strip().split("/")[:-1]) + "/classes.txt"
+        if os.path.isfile(filepath):
+            with open(filepath, encoding='utf-8', mode='r') as class_file:
+                classes = class_file.readlines()
+            return classes
+        return None
+
     def openImage(self):
         filename = QFileDialog.getOpenFileName(self.graphicsView,
                                                "Open Image",
                                                ".",
                                                "Images (*.png *.jpg)")
+
         scene = self.graphicsView.scene
         if isinstance(scene, QLabelGraphicScene):
             scene.change_image(filename[0])
         self.label_inspector.clear()
+        classes = self.openClassesFile(filename[0])
+        if classes:
+            self.label_inspector.add_label_classes(classes, inplace=True)
 
     def addLabelClass(self, event):
         name, done = QtWidgets.QInputDialog.getText(

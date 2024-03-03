@@ -19,12 +19,12 @@ class QLabelList(QtWidgets.QListView):
         self.setSizePolicy(size_policy)
         self.object_list_model = QStandardItemModel()
         self.setModel(self.object_list_model)
-        self.clicked[QModelIndex].connect(self.change_label)
+        self.clicked[QModelIndex].connect(self.change_current_label)
         self.label_inspector.labels_changed.append(self.update_label_list)
         self.label_inspector.current_changed.append(self.update_current_label)
         self.setObjectName("objectList")
 
-    def change_label(self, index):
+    def change_current_label(self, index):
         item: QStandardItem = self.object_list_model.itemFromIndex(index)
         self.label_inspector.set_current(item.data())
 
