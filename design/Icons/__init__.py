@@ -1,0 +1,1 @@
+from .iconspath import IconsPath
