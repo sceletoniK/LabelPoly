@@ -38,15 +38,10 @@ class LabelItem:
             point.y += delta_point.y()
 
     def _optimize(self) -> List[LabelPoint]:
-        new_points: List[LabelPoint] = [] #self.points[:-2]
+        new_points: List[LabelPoint] = []
         if len(self.points) < 3:
             return self.points
-        # if self.points[-1].x == self.points[-2].x == self.points[-3].x or \
-        #        self.points[-1].y == self.points[-2].y == self.points[-3].y:
-        #    new_points += self.points[-1:]
-        # else:
-        #    new_points += self.points[-2:]
-        # return new_points
+
         for i, point in enumerate(self.points):
             if self.points[i - 1].x == point.x == self.points[(i + 1) % len(self.points)].x:
                 print(i)
@@ -57,8 +52,13 @@ class LabelItem:
             new_points.append(point)
         if len(new_points) < 4 and self.is_finished:
             raise LabelBoundException("No rect label")
+        if self.is_finished:
+            for i, point in enumerate(new_points):
+                if new_points[i].range_poly(new_points[i - 1]):
+                    raise Exception("Non poly figure")
         if not new_points:
             new_points = [self.points[0], self.points[-1]]
+
         return new_points
 
     def add_point(self, x: int, y: int, limit: int = 100) -> bool:
@@ -87,7 +87,6 @@ class LabelItem:
             return self.is_finished
 
         self.points.append(new_point)
-        #self.points = self._optimize()
         return self.is_finished
 
     def get_bound(self) -> Tuple[int, int, int, int]:
@@ -153,8 +152,8 @@ class QLabelGraphicItem(QGraphicsItem):
             for point in points:
                 painter.drawEllipse(
                     QRect(
-                        QPoint(point.x() - 3, point.y() - 3),
-                        QPoint(point.x() + 3, point.y() + 3)
+                        QPoint(point.x() - 2, point.y() - 2),
+                        QPoint(point.x() + 2, point.y() + 2)
                     )
                 )
 

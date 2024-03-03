@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QKeyEvent
-from PyQt5.QtWidgets import QApplication, QGraphicsSceneMouseEvent
+from PyQt5.QtWidgets import QGraphicsSceneMouseEvent
 
 from .Strategy import LabelStrategy
 

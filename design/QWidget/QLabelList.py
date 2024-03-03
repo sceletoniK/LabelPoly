@@ -21,11 +21,18 @@ class QLabelList(QtWidgets.QListView):
         self.setModel(self.object_list_model)
         self.clicked[QModelIndex].connect(self.change_label)
         self.label_inspector.labels_changed.append(self.update_label_list)
+        self.label_inspector.current_changed.append(self.update_current_label)
         self.setObjectName("objectList")
 
     def change_label(self, index):
         item: QStandardItem = self.object_list_model.itemFromIndex(index)
         self.label_inspector.set_current(item.data())
+
+    def update_current_label(self):
+        for index in range(self.object_list_model.rowCount()):
+            item = self.object_list_model.item(index)
+            if item.data() == self.label_inspector.current_label:
+                self.selectionModel().select(item.index(), QItemSelectionModel.SelectionFlag.ClearAndSelect)
 
     def update_label_list(self):
         self.object_list_model.clear()
