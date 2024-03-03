@@ -28,6 +28,11 @@ class LabelItem:
         self.is_finished = False
         self.class_index = class_index
 
+    def move(self, delta_point: QPoint):
+        for point in self.points:
+            point.x += delta_point.x()
+            point.y += delta_point.y()
+
     def add_point(self, x: int, y: int, limit: int = 100) -> bool:
         if self.is_finished:
             raise Exception('Try add point to finished poly')

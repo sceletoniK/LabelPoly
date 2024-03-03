@@ -3,41 +3,21 @@ from PyQt5.QtGui import QPainter
 from PyQt5.QtWidgets import QGraphicsView, QApplication
 
 from .Scene import QLabelGraphicScene
-from ..Inspector import LabelInspector
-from ..Strategy import LabelStrategy, InsertStrategy
 
 
 class QLabelGraphicView(QGraphicsView):
 
-    def __init__(self, parent, label_inspector: LabelInspector):
+    def __init__(self, parent, scene: QLabelGraphicScene):
         super().__init__(parent)
-        self.setScene(QLabelGraphicScene(label_inspector))
+        self.setScene(scene)
         self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
         self.setOptimizationFlag(QGraphicsView.DontAdjustForAntialiasing, True)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
-        self.strategy: LabelStrategy = InsertStrategy()
-        self.inspector = label_inspector
 
     @property
     def scene(self) -> QLabelGraphicScene:
         return super().scene()
-
-    def keyReleaseEvent(self, event):
-        if self.strategy:
-            self.strategy.keyReleaseEvent(event, self.scene)
-
-    def mouseMoveEvent(self, event):
-        if self.strategy:
-            self.strategy.mouseMoveEvent(event, self.scene, self.mapToScene(event.pos()))
-
-    def mousePressEvent(self, event):
-        if self.strategy:
-            self.strategy.mousePressEvent(event, self.scene, self.mapToScene(event.pos()))
-
-    def mouseReleaseEvent(self, event):
-        if self.strategy:
-            self.strategy.mouseReleaseEvent(event, self.scene, self.mapToScene(event.pos()))
 
     def wheelEvent(self, event):
         if not self.scene.image:

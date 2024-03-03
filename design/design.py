@@ -1,3 +1,4 @@
+import functools
 from pathlib import Path
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -7,6 +8,7 @@ from PyQt5.QtWidgets import QAction, QFileDialog
 
 from .Inspector import LabelInspector
 from .QWidget import QLabelGraphicScene, QLabelGraphicView
+from .Strategy import LabelStrategy, InsertStrategy, SelectStrategy
 
 FILE = Path(__file__).resolve()
 ROOT = str(FILE.parents[0])
@@ -27,17 +29,18 @@ class Ui_LabelPoly(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
 
-        #Main window
+        # Main window
         self.label_inspector = LabelInspector([])
-        self.graphicsView = QLabelGraphicView(self.centralwidget, self.label_inspector)
+        self.graphicsScene = QLabelGraphicScene(self.label_inspector)
+        self.graphicsView = QLabelGraphicView(self.centralwidget, self.graphicsScene)
         self.graphicsView.setObjectName("graphicsView")
         self.horizontalLayout_2.addWidget(self.graphicsView)
 
-        #Lists
+        # Lists
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
 
-        #Label list
+        # Label list
         self.label_label = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Tahoma")
@@ -78,12 +81,11 @@ class Ui_LabelPoly(object):
         self.add_label_button.clicked.connect(self.addLabelClass)
         self.horizontalLayout.addWidget(self.add_label_button)
 
-
         self.verticalLayout.addLayout(self.horizontalLayout)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
 
-        #Object list
+        # Object list
         self.object_label = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Tahoma")
@@ -129,6 +131,7 @@ class Ui_LabelPoly(object):
         LabelPoly.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         open_single_action = QAction('Open file', self.toolBar)
         open_single_action.triggered.connect(self.openImage)
+        open_single_action.setData({"aboba": 1})
         open_single_action.setStatusTip('Open a document')
         open_single_action.setIcon(QIcon(ROOT + "/icons/open_single.png"))
         self.toolBar.addAction(open_single_action)
@@ -140,11 +143,29 @@ class Ui_LabelPoly(object):
         insert_strategy_action = QAction("Create", self.toolBar)
         insert_strategy_action.setStatusTip("Create label")
         insert_strategy_action.setIcon(QIcon(ROOT + "/icons/insert.png"))
+        insert_strategy_action.setData({"strategy": InsertStrategy(self.graphicsScene)})
+        insert_strategy_action.triggered.connect(functools.partial(self.setStrategy, insert_strategy_action))
+        insert_strategy_action.setCheckable(True)
         self.toolBar.addAction(insert_strategy_action)
         select_strategy_action = QAction("Select", self.toolBar)
         select_strategy_action.setStatusTip("Select label")
         select_strategy_action.setIcon(QIcon(ROOT + "/icons/drag.png"))
+        select_strategy_action.setData({"strategy": SelectStrategy(self.graphicsScene)})
+        select_strategy_action.triggered.connect(functools.partial(self.setStrategy, select_strategy_action))
+        select_strategy_action.setCheckable(True)
+        select_strategy_action.setDisabled(True)
         self.toolBar.addAction(select_strategy_action)
+        self.strategy_actions = [insert_strategy_action, select_strategy_action]
+        self.setStrategy(insert_strategy_action)
+
+    def setStrategy(self, action: QAction):
+        if action.data() and isinstance(action.data(), dict):
+            strategy = action.data().get("strategy", None)
+            for another_action in self.strategy_actions:
+                another_action.setChecked(False)
+            if strategy and isinstance(strategy, LabelStrategy):
+                strategy.apply()
+                action.setChecked(True)
 
     def openImage(self):
         filename = QFileDialog.getOpenFileName(self.graphicsView,
