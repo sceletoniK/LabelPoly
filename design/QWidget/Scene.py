@@ -59,7 +59,7 @@ class QLabelGraphicScene(QGraphicsScene):
             self.removeItem(label)
         for label in self.label_inspector.labels:
             self.addItem(QLabelGraphicItem(label))
-        self.update()
+        self._update_current()
 
     def _update_current(self):
         if self._current_label:

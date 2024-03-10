@@ -3,7 +3,7 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 from .Inspector import LabelInspector
-from .QWidget import QLabelGraphicScene, QLabelGraphicView, QLabelList, QLabelToolBar
+from .QWidget import QLabelGraphicScene, QLabelGraphicView, QLabelList, QLabelToolBar, QLabelClassList
 
 
 class Ui_LabelPoly(object):
@@ -25,7 +25,7 @@ class Ui_LabelPoly(object):
         self.label_inspector = LabelInspector([])
         self.graphicsScene = QLabelGraphicScene(self.label_inspector)
         self.graphicsView = QLabelGraphicView(self.centralwidget, self.graphicsScene)
-        self.label_inspector.labels_classes_changed.append(self.updateLabelClassList)
+
         self.graphicsView.setObjectName("graphicsView")
         self.horizontalLayout_2.addWidget(self.graphicsView)
 
@@ -52,17 +52,7 @@ class Ui_LabelPoly(object):
         self.label_label.setObjectName("label_2")
         self.label_label.setText("Labels")
         self.verticalLayout.addWidget(self.label_label)
-        self.labels_list = QtWidgets.QListView(self.centralwidget)
-        self.label_list_model = QStandardItemModel()
-        self.labels_list.setModel(self.label_list_model)
-        self.labels_list.clicked[QModelIndex].connect(self.changeLabelClass)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.labels_list.sizePolicy().hasHeightForWidth())
-        self.labels_list.setSizePolicy(sizePolicy)
-        self.labels_list.setMaximumSize(QtCore.QSize(1000, 16777215))
-        self.labels_list.setObjectName("classesList")
+        self.labels_list = QLabelClassList(self.centralwidget, self.label_inspector)
         self.verticalLayout.addWidget(self.labels_list)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
@@ -71,7 +61,7 @@ class Ui_LabelPoly(object):
         self.add_label_button.setMaximumSize(QtCore.QSize(80, 16777215))
         self.add_label_button.setObjectName("add_label_button")
         self.add_label_button.setText("Add")
-        self.add_label_button.clicked.connect(self.addLabelClass)
+        self.add_label_button.clicked.connect(self.labels_list.addLabelClass)
         self.horizontalLayout.addWidget(self.add_label_button)
 
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -110,27 +100,6 @@ class Ui_LabelPoly(object):
         # Toolbar
         self.toolbar = QLabelToolBar(LabelPoly, self.graphicsScene)
         LabelPoly.addToolBar(QtCore.Qt.TopToolBarArea, self.toolbar)
-
-    def addLabelClass(self, event):
-        name, done = QtWidgets.QInputDialog.getText(
-            self.centralwidget, 'Adding label class', 'Enter label class name:')
-        if done and name:
-            added = self.label_inspector.add_label_class(name)
-            if not added:
-                warning_dialog = QtWidgets.QMessageBox()
-                warning_dialog.setText("Label with that name already exist")
-                warning_dialog.setWindowTitle("Warning")
-                warning_dialog.exec()
-            self.updateLabelClassList()
-
-    def changeLabelClass(self, index):
-        item = self.label_list_model.itemFromIndex(index)
-        self.label_inspector.change_label_class(item.text())
-
-    def updateLabelClassList(self):
-        self.label_list_model.clear()
-        for i in self.label_inspector.label_classes:
-            self.label_list_model.appendRow(QStandardItem(i))
 
     def retranslateUi(self, LabelPoly):
         _translate = QtCore.QCoreApplication.translate

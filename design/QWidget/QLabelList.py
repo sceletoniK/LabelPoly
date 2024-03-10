@@ -29,6 +29,9 @@ class QLabelList(QtWidgets.QListView):
         self.label_inspector.set_current(item.data())
 
     def update_current_label(self):
+        if not self.label_inspector.current_label:
+            self.selectionModel().clearSelection()
+            return
         for index in range(self.object_list_model.rowCount()):
             item = self.object_list_model.item(index)
             if item.data() == self.label_inspector.current_label:

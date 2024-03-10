@@ -43,7 +43,11 @@ class InsertStrategy(LabelStrategy):
             return
 
         if event.button() == Qt.RightButton:
-            self.scene.label_inspector.delete_label(self.scene.label_inspector.current_label)
+            if (self.scene.label_inspector.current_label and
+                    self.scene.label_inspector.current_label.is_finished):
+                self.scene.label_inspector.set_current(None)
+            elif self.scene.label_inspector.current_label:
+                self.scene.label_inspector.delete_label(self.scene.label_inspector.current_label)
             self.scene.update()
             return
 
