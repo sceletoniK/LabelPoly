@@ -82,9 +82,9 @@ class LabelItem:
             diff0 = self.points[-1].diff(self.points[0])
 
             if abs(diff0[0]) <= abs(diff0[1]):
-                self.points[-1].x = self.points[0].x
+                self.points[0].x = self.points[-1].x
             else:
-                self.points[-1].y = self.points[0].y
+                self.points[0].y = self.points[-1].y
 
             self.points = self._optimize()
             self.is_finished = True
@@ -106,8 +106,8 @@ class LabelItem:
             max([t.y for t in self.points]) - y
         )
 
-    def to_yolo_format(self):
-        pass
+    def to_yolo_format(self) -> str:
+        return ' '.join([self.class_index] + [f'{p.x} {p.y}' for p in self.points])
 
 
 class QLabelGraphicItem(QGraphicsItem):
