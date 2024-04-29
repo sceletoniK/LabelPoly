@@ -1,8 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QModelIndex
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
-from .Inspector import LabelInspector
+from .Inspector import LabelInspector, ImageInspector
 from .QWidget import QLabelGraphicScene, QLabelGraphicView, QLabelList, QLabelToolBar, QLabelClassList
 
 
@@ -23,7 +21,8 @@ class Ui_LabelPoly(object):
 
         # Main window
         self.label_inspector = LabelInspector([])
-        self.graphicsScene = QLabelGraphicScene(self.label_inspector)
+        self.image_inspector = ImageInspector(self.label_inspector)
+        self.graphicsScene = QLabelGraphicScene(self.label_inspector, self.image_inspector)
         self.graphicsView = QLabelGraphicView(self.centralwidget, self.graphicsScene)
 
         self.graphicsView.setObjectName("graphicsView")

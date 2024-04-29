@@ -19,41 +19,43 @@ class QLabelToolBar(QToolBar):
         self.setObjectName("toolBar")
         self.setIconSize(QSize(40, 40))
         self.scene = scene
-        self.scene.label_inspector.labels_classes_changed.append(self.updateClassesFile)
+        self.scene.label_inspector.labels_classes_changed.append(self.update_classes_file)
 
         open_single_action = QAction('Open file', self)
-        open_single_action.triggered.connect(self.openImage)
+        open_single_action.triggered.connect(functools.partial(self.open_images, True))
         open_single_action.setData({"aboba": 1})
         open_single_action.setStatusTip('Open a document')
         open_single_action.setIcon(QIcon(IconsPath.open_single.value))
         self.addAction(open_single_action)
         open_folder_action = QAction("Open folder", self)
+        open_folder_action.triggered.connect(functools.partial(self.open_images))
         open_folder_action.setStatusTip("Open a folder of documents")
         open_folder_action.setIcon(QIcon(IconsPath.open_folder.value))
-        open_folder_action.setDisabled(True)
+        # open_folder_action.setDisabled(True)
         self.addAction(open_folder_action)
         self.addSeparator()
         insert_strategy_action = QAction("Create", self)
         insert_strategy_action.setStatusTip("Create label")
         insert_strategy_action.setIcon(QIcon(IconsPath.insert.value))
         insert_strategy_action.setData({"strategy": InsertStrategy(scene)})
-        insert_strategy_action.triggered.connect(functools.partial(self.setStrategy, insert_strategy_action))
+        insert_strategy_action.triggered.connect(functools.partial(self.set_strategy, insert_strategy_action))
         insert_strategy_action.setCheckable(True)
         self.addAction(insert_strategy_action)
         select_strategy_action = QAction("Select", self)
         select_strategy_action.setStatusTip("Select label")
         select_strategy_action.setIcon(QIcon(IconsPath.drag.value))
         select_strategy_action.setData({"strategy": SelectStrategy(scene)})
-        select_strategy_action.triggered.connect(functools.partial(self.setStrategy, select_strategy_action))
+        select_strategy_action.triggered.connect(functools.partial(self.set_strategy, select_strategy_action))
         select_strategy_action.setCheckable(True)
         select_strategy_action.setDisabled(True)
         self.addAction(select_strategy_action)
         self.strategy_actions = [insert_strategy_action, select_strategy_action]
-        self.setStrategy(insert_strategy_action)
+        self.set_strategy(insert_strategy_action)
+        self.addSeparator()
 
         self.classes_filepath: str = None
 
-    def setStrategy(self, action: QAction):
+    def set_strategy(self, action: QAction):
         if action.data() and isinstance(action.data(), dict):
             strategy = action.data().get("strategy", None)
             for another_action in self.strategy_actions:
@@ -62,7 +64,7 @@ class QLabelToolBar(QToolBar):
                 strategy.apply()
                 action.setChecked(True)
 
-    def openClassesFile(self, filepath: str) -> Optional[List[str]]:
+    def open_classes_file(self, filepath: str) -> Optional[List[str]]:
         if not filepath.endswith("classes.txt"):
             filepath = '/'.join(filepath.strip().split("/")[:-1]) + "/classes.txt"
         self.classes_filepath = filepath
@@ -75,7 +77,7 @@ class QLabelToolBar(QToolBar):
                 pass
             return []
 
-    def updateClassesFile(self):
+    def update_classes_file(self):
         if not self.scene.image.width():
             return
         classes = [x + '\n' for x in self.scene.label_inspector.label_classes]
@@ -83,16 +85,20 @@ class QLabelToolBar(QToolBar):
         with open(self.classes_filepath, encoding='utf-8', mode='w') as file:
             file.writelines(classes)
 
+    def open_images(self, single: bool = False):
+        if single:
+            path, done = QFileDialog.getOpenFileName(self,
+                                                     "Open Image",
+                                                     ".",
+                                                     "Images (*.png *.jpg *.jpeg)")
+        else:
+            path = QFileDialog.getExistingDirectory(self,
+                                                    'Select a folder',
+                                                    '.',
+                                                    QFileDialog.ShowDirsOnly)
+            done = True if path else False
 
-    def openImage(self):
-        filename, done = QFileDialog.getOpenFileName(self,
-                                               "Open Image",
-                                               ".",
-                                               "Images (*.png *.jpg)")
-
-        scene = self.scene
-        if done and isinstance(scene, QLabelGraphicScene):
-            scene.change_image(filename)
-            self.scene.label_inspector.clear()
-            classes = self.openClassesFile(filename)
+        if done:
+            self.scene.image_inspector.get_images(path)
+            classes = self.open_classes_file(path)
             self.scene.label_inspector.add_label_classes(classes, inplace=True)

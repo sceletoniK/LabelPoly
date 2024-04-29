@@ -17,8 +17,6 @@ class Window(QtWidgets.QMainWindow):
         return super(Window, self).resizeEvent(event)
 
 
-
-
 app = QtWidgets.QApplication([])
 application = Window()
 application.show()
