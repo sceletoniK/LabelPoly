@@ -30,7 +30,6 @@ class QLabelToolBar(QToolBar):
         open_folder_action.triggered.connect(functools.partial(self.open_images))
         open_folder_action.setStatusTip("Open a folder of documents")
         open_folder_action.setIcon(QIcon(IconsPath.open_folder.value))
-        # open_folder_action.setDisabled(True)
         self.addAction(open_folder_action)
         self.addSeparator()
         insert_strategy_action = QAction("Create", self)

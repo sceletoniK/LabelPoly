@@ -1,3 +1,5 @@
+import functools
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .Inspector import LabelInspector, ImageInspector
@@ -24,6 +26,8 @@ class Ui_LabelPoly(object):
         self.image_inspector = ImageInspector(self.label_inspector)
         self.graphicsScene = QLabelGraphicScene(self.label_inspector, self.image_inspector)
         self.graphicsView = QLabelGraphicView(self.centralwidget, self.graphicsScene)
+
+        self.image_inspector.current_changed.append(functools.partial(self.update_image_name, LabelPoly))
 
         self.graphicsView.setObjectName("graphicsView")
         self.horizontalLayout_2.addWidget(self.graphicsView)
@@ -103,3 +107,11 @@ class Ui_LabelPoly(object):
     def retranslateUi(self, LabelPoly):
         _translate = QtCore.QCoreApplication.translate
         LabelPoly.setWindowTitle(_translate("LabelPoly", "MainWindow"))
+
+    def update_image_name(self, LabelPoly):
+        _translate = QtCore.QCoreApplication.translate
+        if self.image_inspector.current:
+            LabelPoly.setWindowTitle(_translate("LabelPoly",
+                                                self.image_inspector.current.labels_file.name.split('.')[0]))
+        else:
+            self.retranslateUi(LabelPoly)
