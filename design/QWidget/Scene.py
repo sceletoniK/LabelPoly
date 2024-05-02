@@ -1,9 +1,9 @@
 from typing import Optional
 
-from PyQt5.QtGui import QPixmap, QColor, QBrush
+from PyQt5.QtGui import QColor, QBrush
 from PyQt5.QtWidgets import QGraphicsScene
 
-from ..Inspector import LabelInspector, ImageInspector
+from ..Inspector import LabelInspector, ImageInspector, ImageItem
 from ..Label import QLabelGraphicItem, LabelManipulator, LabelItem
 
 
@@ -14,16 +14,12 @@ class QLabelGraphicScene(QGraphicsScene):
         self.label_inspector = label_inspector
         self.image_inspector = image_inspector
         self._current_label: QLabelGraphicItem = None
-        self.image = QPixmap()
-        self.setSceneRect(
-            self.image.rect().x(),
-            self.image.rect().y(),
-            self.image.rect().width(),
-            self.image.rect().height()
-        )
+        self.image: Optional[ImageItem] = None
         self.setBackgroundBrush(QBrush(QColor.fromRgb(180, 180, 180)))
         self.label_inspector.current_changed.append(self._update_current)
         self.label_inspector.labels_changed.append(self._update_labels)
+        self.image_inspector.current_changed.append(self.change_image)
+        self.image_inspector.images_changed.append(self.change_image)
 
     @property
     def current_label(self):
@@ -58,7 +54,9 @@ class QLabelGraphicScene(QGraphicsScene):
         for label in [x for x in self.items() if isinstance(x, (QLabelGraphicItem, LabelManipulator))]:
             self.removeItem(label)
         for label in self.label_inspector.labels:
-            self.addItem(QLabelGraphicItem(label))
+            item = QLabelGraphicItem(label)
+            item.setZValue(100)
+            self.addItem(item)
         self._update_current()
 
     def _update_current(self):
@@ -72,26 +70,13 @@ class QLabelGraphicScene(QGraphicsScene):
     def change_image(self):
         self.clear()
         self.image = self.image_inspector.current
-        self.addPixmap(self.image)
-        self.setSceneRect(
-            self.image.rect().x(),
-            self.image.rect().y(),
-            self.image.rect().width(),
-            self.image.rect().height()
-        )
-
-# def change_image(self, value: Union[str, ImageItem]):
-#    self.clear()
-#    if isinstance(value, str):
-#        self.image = QPixmap(value)
-#    elif isinstance(value, ImageItem):
-#        self.image = value.pixmap
-#    else:
-#        raise Exception("Unknown type value for scene image change")
-#    self.addPixmap(self.image)
-#    self.setSceneRect(
-#        self.image.rect().x(),
-#        self.image.rect().y(),
-#        self.image.rect().width(),
-#        self.image.rect().height()
-#    )
+        if self.image:
+            item = self.addPixmap(self.image.pixmap)
+            item.setZValue(0)
+            self.setSceneRect(
+                self.image.pixmap.rect().x(),
+                self.image.pixmap.rect().y(),
+                self.image.pixmap.rect().width(),
+                self.image.pixmap.rect().height()
+            )
+        self._update_labels()

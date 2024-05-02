@@ -23,7 +23,6 @@ class QLabelToolBar(QToolBar):
 
         open_single_action = QAction('Open file', self)
         open_single_action.triggered.connect(functools.partial(self.open_images, True))
-        open_single_action.setData({"aboba": 1})
         open_single_action.setStatusTip('Open a document')
         open_single_action.setIcon(QIcon(IconsPath.open_single.value))
         self.addAction(open_single_action)
@@ -52,6 +51,16 @@ class QLabelToolBar(QToolBar):
         self.strategy_actions = [insert_strategy_action, select_strategy_action]
         self.set_strategy(insert_strategy_action)
         self.addSeparator()
+        prev_image_action = QAction("Prev", self)
+        prev_image_action.setStatusTip("Get previous image")
+        prev_image_action.setIcon(QIcon(IconsPath.prev.value))
+        prev_image_action.triggered.connect(functools.partial(self.prev_image))
+        self.addAction(prev_image_action)
+        next_image_action = QAction("Next", self)
+        next_image_action.setStatusTip("Get next image")
+        next_image_action.setIcon(QIcon(IconsPath.next.value))
+        next_image_action.triggered.connect(functools.partial(self.next_image))
+        self.addAction(next_image_action)
 
         self.classes_filepath: str = None
 
@@ -64,9 +73,12 @@ class QLabelToolBar(QToolBar):
                 strategy.apply()
                 action.setChecked(True)
 
-    def open_classes_file(self, filepath: str) -> Optional[List[str]]:
+    def open_classes_file(self, filepath: str, single: bool) -> Optional[List[str]]:
         if not filepath.endswith("classes.txt"):
-            filepath = '/'.join(filepath.strip().split("/")[:-1]) + "/classes.txt"
+            if single:
+                filepath = '/'.join(filepath.strip().split("/")[:-1]) + "/classes.txt"
+            else:
+                filepath += "/classes.txt"
         self.classes_filepath = filepath
         if os.path.isfile(filepath):
             with open(filepath, encoding='utf-8', mode='r') as class_file:
@@ -78,7 +90,7 @@ class QLabelToolBar(QToolBar):
             return []
 
     def update_classes_file(self):
-        if not self.scene.image.width():
+        if not self.scene.image or not self.scene.image.pixmap.rect().width():
             return
         classes = [x + '\n' for x in self.scene.label_inspector.label_classes]
         open(self.classes_filepath, mode='w').close()
@@ -99,6 +111,14 @@ class QLabelToolBar(QToolBar):
             done = True if path else False
 
         if done:
-            self.scene.image_inspector.get_images(path)
-            classes = self.open_classes_file(path)
+            classes = self.open_classes_file(path, single)
             self.scene.label_inspector.add_label_classes(classes, inplace=True)
+            self.scene.image_inspector.get_images(path)
+
+    def prev_image(self):
+        if self.scene.image_inspector.prev:
+            self.scene.image_inspector.current = self.scene.image_inspector.prev
+
+    def next_image(self):
+        if self.scene.image_inspector.next:
+            self.scene.image_inspector.current = self.scene.image_inspector.next

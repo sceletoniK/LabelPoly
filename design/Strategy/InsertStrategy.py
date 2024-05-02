@@ -8,7 +8,7 @@ from .Strategy import LabelStrategy
 class InsertStrategy(LabelStrategy):
 
     def keyReleaseEvent(self, event: QKeyEvent):
-        if not self.scene.image.width():
+        if not self.scene.image:
             return
         modifiers = event.modifiers()
         if (modifiers != Qt.ControlModifier or
@@ -34,9 +34,9 @@ class InsertStrategy(LabelStrategy):
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         if event.scenePos().x() < 0 or \
-                event.scenePos().x() >= self.scene.image.width() or \
+                event.scenePos().x() >= self.scene.image.pixmap.width() or \
                 event.scenePos().y() < 0 or \
-                event.scenePos().y() >= self.scene.image.height():
+                event.scenePos().y() >= self.scene.image.pixmap.height():
             return
 
         if not self.scene.label_inspector.current_class:

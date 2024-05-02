@@ -16,6 +16,10 @@ class Window(QtWidgets.QMainWindow):
         self.resized.emit()
         return super(Window, self).resizeEvent(event)
 
+    def closeEvent(self, event):
+        self.ui.image_inspector.current = None
+        event.accept()
+
 
 app = QtWidgets.QApplication([])
 application = Window()

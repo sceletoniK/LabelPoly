@@ -106,9 +106,6 @@ class LabelItem:
             max([t.y for t in self.points]) - y
         )
 
-    def to_yolo_format(self) -> str:
-        return ' '.join([self.class_index] + [f'{p.x} {p.y}' for p in self.points])
-
 
 class QLabelGraphicItem(QGraphicsItem):
     label_colors: List[QColor] = [
